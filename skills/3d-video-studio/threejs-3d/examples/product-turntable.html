@@ -1,0 +1,81 @@
+<!doctype html>
+<!-- Minimal deterministic 3D scene: a glossy object on a studio floor, slow camera push-in.
+     Preview: open in a browser (?preview=1 animates in real time).
+     Render:  node ../scripts/render-frames.mjs product-turntable.html out 1920 1080 30 180
+              ffmpeg -framerate 30 -i out/%05d.png -c:v libx264 -pix_fmt yuv420p -crf 16 product.mp4 -->
+<html>
+<head>
+<meta charset="utf-8">
+<style>html,body{margin:0;background:#0d0f14;overflow:hidden}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.187.0/examples/jsm/"}}</script>
+</head>
+<body>
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+const W = innerWidth, H = innerHeight;
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, H, false);
+renderer.setPixelRatio(1);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#14161c');
+scene.fog = new THREE.Fog('#14161c', 7, 16);          // floor fades into the backdrop (no hard horizon)
+scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+
+const camera = new THREE.PerspectiveCamera(35, W / H, 0.1, 100);
+
+// hero object: torus knot in clear-coated car paint
+const hero = new THREE.Mesh(
+  new THREE.TorusKnotGeometry(0.8, 0.28, 300, 48),
+  new THREE.MeshPhysicalMaterial({ color: '#c2412d', metalness: 0.3, roughness: 0.35, clearcoat: 1, clearcoatRoughness: 0.05 })
+);
+hero.position.y = 1.2;
+hero.castShadow = true;
+scene.add(hero);
+
+// floor + soft shadow
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshStandardMaterial({ color: '#1b1e26', roughness: 0.9 }));
+floor.rotation.x = -Math.PI / 2;
+floor.receiveShadow = true;
+scene.add(floor);
+
+const key = new THREE.DirectionalLight('#ffe2c4', 2.2);
+key.position.set(4, 6, 3);
+key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+key.shadow.radius = 6;
+scene.add(key);
+const rim = new THREE.DirectionalLight('#9cc4ff', 1.4);
+rim.position.set(-5, 3, -4);
+scene.add(rim);
+
+const ease = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const DURATION = 6; // seconds
+
+window.renderFrame = (frame, fps = 30) => {
+  const t = Math.min(frame / fps / DURATION, 1);
+  const e = ease(t);
+  const angle = -0.6 + e * 1.4;
+  const dist = 7.5 - e * 1.6;
+  camera.position.set(Math.sin(angle) * dist, 1.6 + e * 0.4, Math.cos(angle) * dist);
+  camera.lookAt(0, 1.1, 0);
+  hero.rotation.y = e * Math.PI * 0.75;
+  renderer.render(scene, camera);
+};
+
+window.renderFrame(0);
+if (new URLSearchParams(location.search).has('preview')) {
+  const start = performance.now();
+  const loop = () => { window.renderFrame(((performance.now() - start) / 1000) * 30 % (DURATION * 30)); requestAnimationFrame(loop); };
+  loop();
+}
+</script>
+</body>
+</html>
