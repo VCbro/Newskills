@@ -1,0 +1,297 @@
+<!doctype html>
+<!-- Solar system — 20 s realistic 3D explainer with Hindi captions (3d-video-studio / threejs-3d).
+     Preview:  open with ?preview=1 (plays in real time) or ?t=9.5 (one frozen moment).
+     Render:   SHOT=page node ../../skills/3d-video-studio/threejs-3d/scripts/render-frames.mjs solar-system.html frames 1920 1080 30 600
+     Every frame is a pure function of time: seeded textures, no Math.random(), no clock. -->
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<title>सौर मंडल</title>
+<style>
+  @font-face { font-family: Deva; src: url(fonts/NotoDeva-700.woff2) format('woff2'); font-weight: 700; }
+  @font-face { font-family: Deva; src: url(fonts/NotoDeva-500.woff2) format('woff2'); font-weight: 500; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+  canvas { display: block; }
+  #ui { position: fixed; inset: 0; pointer-events: none; font-family: Deva, sans-serif; color: #fff; }
+  .title { position: absolute; left: 0; right: 0; top: 9%; text-align: center; opacity: 0; }
+  .title h1 { margin: 0; font-size: 9vh; font-weight: 700; letter-spacing: .02em; text-shadow: 0 0 4vh rgba(255,170,60,.45); }
+  .title p { margin: 1.2vh 0 0; font-size: 3vh; font-weight: 500; color: #ffd9a8; letter-spacing: .08em; }
+  .cap { position: absolute; left: 50%; bottom: 7vh; transform: translateX(-50%); max-width: 80vw; text-align: center;
+         font-size: 4.4vh; font-weight: 700; line-height: 1.35; padding: 1.1vh 3vh 1.5vh; border-radius: 1.4vh;
+         background: rgba(5, 8, 16, .58); opacity: 0; white-space: nowrap; }
+  .cap b { color: #ffc56b; font-weight: 700; }
+  .lbl { position: absolute; font-size: 2.3vh; font-weight: 500; color: #e8eefc; opacity: 0; white-space: nowrap;
+         transform: translate(-50%, -100%); text-shadow: 0 0 .8vh #000, 0 0 .4vh #000; }
+  .lbl::after { content: ''; display: block; width: 1px; height: 2.2vh; margin: .4vh auto 0; background: rgba(232,238,252,.7); }
+  .note { position: absolute; right: 2.4vh; top: 2vh; font-size: 1.7vh; font-weight: 500; color: rgba(255,255,255,.55); }
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.187.0/examples/jsm/"}}</script>
+</head>
+<body>
+<div id="ui">
+  <div class="title" id="title"><h1>हमारा सौर मंडल</h1><p>एक तारा · आठ ग्रह</p></div>
+  <div class="cap" id="cap"></div>
+  <div class="note">पैमाना वास्तविक नहीं</div>
+</div>
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+const W = innerWidth, H = innerHeight, DURATION = 20;
+
+// ---------- seeded noise (deterministic) ----------
+const hash = (x, y, s) => { let h = (x * 374761393 + y * 668265263 + s * 2147483647) | 0; h = (h ^ (h >>> 13)) * 1274126177; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+const smooth = (t) => t * t * (3 - 2 * t);
+function vnoise(x, y, s, wrapX) {
+  const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+  const X = (v) => (wrapX ? ((v % wrapX) + wrapX) % wrapX : v);
+  const a = hash(X(xi), yi, s), b = hash(X(xi + 1), yi, s), c = hash(X(xi), yi + 1, s), d = hash(X(xi + 1), yi + 1, s);
+  const u = smooth(xf), v = smooth(yf);
+  return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+}
+function fbm(x, y, s, oct = 5, wrapX = 0) {
+  let sum = 0, amp = 0.5, f = 1;
+  for (let i = 0; i < oct; i++) { sum += amp * vnoise(x * f, y * f, s + i * 17, wrapX ? wrapX * f : 0); amp *= 0.5; f *= 2; }
+  return sum;
+}
+const mix = (a, b, t) => a + (b - a) * t;
+const mixC = (c1, c2, t) => [mix(c1[0], c2[0], t), mix(c1[1], c2[1], t), mix(c1[2], c2[2], t)];
+const clamp01 = (v) => Math.min(1, Math.max(0, v));
+
+// equirectangular texture painted per pixel; wrapX makes the seam invisible
+function paint(w, h, fn) {
+  const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+  const ctx = cv.getContext('2d'), img = ctx.createImageData(w, h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const c = fn(x / w, y / h), i = (y * w + x) * 4;
+    img.data[i] = c[0]; img.data[i + 1] = c[1]; img.data[i + 2] = c[2]; img.data[i + 3] = c[3] ?? 255;
+  }
+  ctx.putImageData(img, 0, 0);
+  const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
+}
+const TW = 1024, TH = 512, F = 8; // texture size, noise base frequency around the equator
+
+const banded = (seed, cols, turb, bands) => paint(TW, TH, (u, v) => {
+  const n = fbm(u * F, v * F * 0.5, seed, 5, F);
+  const b = Math.sin((v + (n - 0.5) * turb) * Math.PI * bands) * 0.5 + 0.5;
+  const c = mixC(cols[0], cols[1], b);
+  return mixC(c, cols[2], clamp01((fbm(u * F, v * F * 3, seed + 9, 4, F) - 0.55) * 2.5));
+});
+
+const TEX = {
+  mercury: paint(TW, TH, (u, v) => { const n = fbm(u * F, v * F * .5, 11, 6, F); const cr = clamp01((fbm(u * F * 4, v * F * 2, 12, 3, F * 4) - .62) * 6); return mixC(mixC([92, 88, 84], [168, 160, 150], n), [60, 56, 54], cr); }),
+  venus: banded(21, [[214, 170, 104], [238, 212, 160], [190, 140, 80]], .25, 6),
+  earth: paint(TW, TH, (u, v) => {
+    const lat = Math.abs(v - .5) * 2, n = fbm(u * F * .6, v * F * .35, 31, 7, F * .6);
+    if (lat > .86 + (n - .5) * .12) return [236, 242, 248];                     // ice caps
+    if (n > .5) { const d = fbm(u * F * 3, v * F * 1.5, 33, 4, F * 3);           // land: green → desert → mountains
+      let c = mixC([52, 96, 44], [150, 130, 82], clamp01((d - .4) * 2.2 + (lat < .35 ? .3 : 0)));
+      return mixC(c, [120, 110, 100], clamp01((n - .66) * 5)); }
+    return mixC([8, 28, 74], [26, 74, 130], clamp01((n - .3) * 4));            // ocean: deep → shallow
+  }),
+  clouds: paint(TW, TH, (u, v) => { const n = fbm(u * F * 1.2, v * F * .8, 41, 6, F * 1.2); const a = clamp01((n - .5) * 3.2) * 235; return [255, 255, 255, a]; }),
+  mars: paint(TW, TH, (u, v) => { const n = fbm(u * F, v * F * .5, 51, 6, F); const lat = Math.abs(v - .5) * 2; if (lat > .9) return [238, 228, 220]; return mixC(mixC([120, 52, 28], [196, 104, 58], n), [80, 40, 26], clamp01((fbm(u * F * .7, v * F * .35, 52, 4, F * .7) - .58) * 4)); }),
+  jupiter: banded(61, [[196, 160, 122], [236, 222, 200], [150, 96, 66]], .1, 15),
+  saturn: banded(71, [[214, 190, 140], [238, 222, 184], [180, 150, 100]], .05, 13),
+  uranus: banded(81, [[150, 214, 222], [176, 228, 232], [130, 196, 210]], .04, 5),
+  neptune: banded(91, [[50, 86, 190], [76, 120, 220], [30, 56, 150]], .1, 7),
+  moon: paint(TW / 2, TH / 2, (u, v) => { const n = fbm(u * F, v * F * .5, 101, 6, F); return mixC([96, 96, 98], [178, 176, 172], n); }),
+};
+// Jupiter's Great Red Spot
+{ const ctx = TEX.jupiter.image.getContext('2d'); const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+  g.addColorStop(0, 'rgba(178,74,42,.95)'); g.addColorStop(.7, 'rgba(196,110,70,.7)'); g.addColorStop(1, 'rgba(196,110,70,0)');
+  ctx.save(); ctx.translate(TW * .62, TH * .64); ctx.scale(54, 26); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 1, 0, 7); ctx.fill(); ctx.restore(); TEX.jupiter.needsUpdate = true; }
+
+// ---------- renderer / scene ----------
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, H, false); renderer.setPixelRatio(1);
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.body.prepend(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#010205');
+const camera = new THREE.PerspectiveCamera(40, W / H, 0.05, 2000);
+scene.add(new THREE.AmbientLight('#8aa0ff', 0.05));
+const sunLight = new THREE.PointLight('#fff2dc', 4.2, 0, 0); scene.add(sunLight);
+
+// stars: seeded points on a far sphere, with a denser milky-way band
+{
+  const N = 9000, pos = new Float32Array(N * 3), col = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) {
+    const band = i < 3500;
+    let z = hash(i, 1, 7) * 2 - 1; if (band) z = (hash(i, 2, 7) - .5) * .28;
+    const th = hash(i, 3, 7) * Math.PI * 2, r = Math.sqrt(1 - z * z), R = 900;
+    const v = new THREE.Vector3(r * Math.cos(th), z, r * Math.sin(th)).applyAxisAngle(new THREE.Vector3(1, 0, .3).normalize(), 1.0).multiplyScalar(R);
+    pos.set([v.x, v.y, v.z], i * 3);
+    const warm = hash(i, 4, 7), b = .35 + Math.pow(hash(i, 5, 7), 3) * .9;
+    col.set([b * (warm > .7 ? 1 : .8), b * .88, b * (warm < .3 ? 1.15 : .9)], i * 3);
+  }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  scene.add(new THREE.Points(g, new THREE.PointsMaterial({ size: 1.6, sizeAttenuation: false, vertexColors: true, depthWrite: false })));
+}
+
+// sun: animated noise surface + additive glow sprite
+const sunMat = new THREE.ShaderMaterial({
+  uniforms: { uTime: { value: 0 } },
+  vertexShader: `varying vec3 vP; varying vec3 vN; varying vec3 vV; void main(){ vP=position; vN=normalize(normalMatrix*normal); vec4 mv=modelViewMatrix*vec4(position,1.); vV=normalize(-mv.xyz); gl_Position=projectionMatrix*mv; }`,
+  fragmentShader: `uniform float uTime; varying vec3 vP; varying vec3 vN; varying vec3 vV;
+    float h(vec3 p){ return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453); }
+    float n(vec3 p){ vec3 i=floor(p), f=fract(p); f=f*f*(3.-2.*f);
+      return mix(mix(mix(h(i),h(i+vec3(1,0,0)),f.x),mix(h(i+vec3(0,1,0)),h(i+vec3(1,1,0)),f.x),f.y),
+                 mix(mix(h(i+vec3(0,0,1)),h(i+vec3(1,0,1)),f.x),mix(h(i+vec3(0,1,1)),h(i+vec3(1,1,1)),f.x),f.y),f.z); }
+    float fbm(vec3 p){ float s=0., a=.5; for(int i=0;i<5;i++){ s+=a*n(p); p*=2.03; a*=.5; } return s; }
+    void main(){ vec3 p=normalize(vP)*3.;
+      float g=fbm(p+vec3(0.,uTime*.25,uTime*.12)); float c=fbm(p*3.+g*2.+uTime*.3);
+      float t=clamp(g*.6+c*.6,0.,1.); float limb=pow(max(dot(vN,vV),0.),.45);
+      vec3 col=mix(vec3(1.6,.45,.06),vec3(3.2,2.2,.9),t)*mix(.55,1.,limb);
+      gl_FragColor=vec4(col,1.); }`,
+});
+const SUN_R = 4;
+const sun = new THREE.Mesh(new THREE.SphereGeometry(SUN_R, 96, 64), sunMat); scene.add(sun);
+function glowTex(stops) { const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d'); const g = x.createRadialGradient(128, 128, 0, 128, 128, 128); stops.forEach(([o, s]) => g.addColorStop(o, s)); x.fillStyle = g; x.fillRect(0, 0, 256, 256); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; }
+const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex([[0, 'rgba(255,210,140,1)'], [.25, 'rgba(255,150,50,.55)'], [.5, 'rgba(255,90,20,.14)'], [1, 'rgba(255,60,0,0)']]), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
+glow.scale.setScalar(SUN_R * 6.5); scene.add(glow);
+
+// planets — distances/sizes compressed for the screen; speeds follow Kepler (r^-1.5)
+const INNER_A = 1.2;
+const P = [
+  { key: 'mercury', name: 'बुध', r: .38, d: 7.2, tilt: .03, spin: 1.2, fan: .3, a0: 2.3 },
+  { key: 'venus', name: 'शुक्र', r: .62, d: 10, tilt: .05, spin: -.4, fan: -.16, a0: 4.1 },
+  { key: 'earth', name: 'पृथ्वी', r: .66, d: 13.6, tilt: .41, spin: 2.0, fan: .1, a0: 0.75 },
+  { key: 'mars', name: 'मंगल', r: .46, d: 17.4, tilt: .44, spin: 1.9, fan: -.2, a0: 5.6 },
+  { key: 'jupiter', name: 'बृहस्पति', r: 2.1, d: 26, tilt: .05, spin: 3.0, a0: 1.6 },
+  { key: 'saturn', name: 'शनि', r: 1.75, d: 35, tilt: .47, spin: 2.7, a0: 3.55 },
+  { key: 'uranus', name: 'अरुण (यूरेनस)', r: 1.1, d: 43, tilt: 1.7, spin: 1.6, a0: 5.0 },
+  { key: 'neptune', name: 'वरुण (नेपच्यून)', r: 1.06, d: 50, tilt: .49, spin: 1.7, a0: 0.25 },
+];
+const ui = document.getElementById('ui');
+for (const p of P) {
+  p.pivot = new THREE.Object3D(); scene.add(p.pivot);
+  p.body = new THREE.Mesh(new THREE.SphereGeometry(p.r, 96, 64), new THREE.MeshStandardMaterial({ map: TEX[p.key], roughness: p.key === 'earth' ? .7 : .95, metalness: 0 }));
+  p.body.rotation.z = p.tilt; p.pivot.add(p.body);
+  p.speed = 0.06 * Math.pow(13.6 / p.d, 1.5);
+  if (p.fan !== undefined) p.a0 = INNER_A + p.fan - 6.6 * p.speed;
+  const orbit = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(Array.from({ length: 256 }, (_, i) => new THREE.Vector3(Math.cos(i / 256 * Math.PI * 2) * p.d, 0, Math.sin(i / 256 * Math.PI * 2) * p.d))),
+    new THREE.LineBasicMaterial({ color: '#7f93c8', transparent: true, opacity: .16, depthWrite: false }));
+  scene.add(orbit);
+  p.label = Object.assign(document.createElement('div'), { className: 'lbl', textContent: p.name }); ui.appendChild(p.label);
+}
+const by = Object.fromEntries(P.map((p) => [p.key, p]));
+
+// Earth: clouds + atmosphere rim + moon
+const E = by.earth;
+const clouds = new THREE.Mesh(new THREE.SphereGeometry(E.r * 1.012, 96, 64), new THREE.MeshStandardMaterial({ map: TEX.clouds, transparent: true, depthWrite: false, roughness: 1 }));
+E.body.add(clouds);
+const atmo = new THREE.Mesh(new THREE.SphereGeometry(E.r * 1.07, 96, 64), new THREE.ShaderMaterial({
+  uniforms: { uSun: { value: new THREE.Vector3() } }, transparent: true, depthWrite: false, side: THREE.BackSide, blending: THREE.AdditiveBlending,
+  vertexShader: `varying vec3 vN; varying vec3 vW; void main(){ vN=normalize(mat3(modelMatrix)*normal); vec4 w=modelMatrix*vec4(position,1.); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }`,
+  fragmentShader: `uniform vec3 uSun; varying vec3 vN; varying vec3 vW; void main(){ vec3 V=normalize(cameraPosition-vW); float rim=pow(1.-abs(dot(vN,V)),2.2); float lit=clamp(dot(vN,normalize(uSun-vW))+.35,0.,1.); gl_FragColor=vec4(vec3(.3,.6,1.)*rim*lit*1.6,1.); }`,
+}));
+E.pivot.add(atmo);
+const moon = new THREE.Mesh(new THREE.SphereGeometry(.18, 64, 48), new THREE.MeshStandardMaterial({ map: TEX.moon, roughness: 1 }));
+E.pivot.add(moon);
+
+// Saturn rings: radial bands with gaps, UVs mapped by radius
+{
+  const S = by.saturn, inner = S.r * 1.25, outer = S.r * 2.35;
+  const g = new THREE.RingGeometry(inner, outer, 256, 1), uv = g.attributes.uv, pos = g.attributes.position, v = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++) { v.fromBufferAttribute(pos, i); uv.setXY(i, (v.length() - inner) / (outer - inner), .5); }
+  const c = document.createElement('canvas'); c.width = 1024; c.height = 4; const x = c.getContext('2d');
+  for (let i = 0; i < 1024; i++) {
+    const u = i / 1024, n = fbm(u * 60, 0, 202, 4);
+    let a = .35 + n * .6; if (u > .58 && u < .63) a *= .08; if (u < .06) a *= u / .06; if (u > .95) a *= (1 - u) / .05;
+    const col = mixC([170, 150, 118], [232, 216, 184], n);
+    x.fillStyle = `rgba(${col[0] | 0},${col[1] | 0},${col[2] | 0},${a.toFixed(3)})`; x.fillRect(i, 0, 1, 4);
+  }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  const ring = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ map: t, transparent: true, side: THREE.DoubleSide, depthWrite: false, roughness: 1 }));
+  ring.rotation.x = -Math.PI / 2; S.body.add(ring);
+}
+
+// post: bloom only catches the sun (HDR values > 1)
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+composer.addPass(new UnrealBloomPass(new THREE.Vector2(W, H), 0.9, 0.6, 0.85));
+composer.addPass(new OutputPass());
+
+// ---------- timeline ----------
+const ease = (x) => (x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const ss = (a, b, x) => { const t = clamp01((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+const wp = (p) => p.body.getWorldPosition(new THREE.Vector3());
+
+// each shot: [start, end, camera(t,u), target(t,u)]; u = 0..1 inside the shot
+const SHOTS = [
+  [0, 4.6, (t, u) => V(0, mix(48, 30, ease(u)), mix(112, 74, ease(u))), () => V(0, 0, 0)],
+  [4.6, 8.6, (t, u) => { const a = INNER_A + mix(.62, .48, ease(u)); return V(Math.cos(a) * 4.6, mix(.9, .6, u), Math.sin(a) * 4.6); }, () => { const a = INNER_A + .02; return V(Math.cos(a) * 12.5, -.5, Math.sin(a) * 12.5); }],
+  [8.6, 12.4, (t, u) => { const e = wp(E); const toSun = e.clone().negate().normalize().applyAxisAngle(V(0, 1, 0), mix(.95, .6, ease(u))); return e.add(toSun.multiplyScalar(mix(2.9, 2.3, ease(u)))).add(V(0, .45, 0)); }, () => wp(E)],
+  [12.4, 14.6, (t, u) => { const j = wp(by.jupiter); const toSun = j.clone().negate().normalize().applyAxisAngle(V(0, 1, 0), mix(.75, .55, u)); return j.add(toSun.multiplyScalar(mix(7.4, 6.6, u))).add(V(0, mix(1.4, .9, u), 0)); }, () => wp(by.jupiter)],
+  [14.6, 16.8, (t, u) => { const s = wp(by.saturn); const toSun = s.clone().negate().normalize().applyAxisAngle(V(0, 1, 0), mix(-.7, -.5, u)); return s.add(toSun.multiplyScalar(mix(7.2, 6.4, u))).add(V(0, mix(2.2, 1.6, u), 0)); }, () => wp(by.saturn)],
+  [16.8, 20, (t, u) => V(mix(-14, 0, ease(u)), mix(54, 74, ease(u)), mix(88, 104, ease(u))), () => V(0, -6, 0)],
+];
+const BLEND = 0; // hard cuts: shots are far apart, a blend would fly the camera through the sun
+
+function shotCam(i, t) { const [a, b, cam, tgt] = SHOTS[i]; const u = clamp01((t - a) / (b - a)); return [cam(t, u), tgt(t, u)]; }
+
+const CAPS = [
+  [0.4, 4.4, null],
+  [4.8, 8.4, 'सूर्य के सबसे पास चार <b>चट्टानी ग्रह</b> — बुध, शुक्र, पृथ्वी, मंगल'],
+  [8.8, 12.2, '<b>पृथ्वी</b> — अब तक ज्ञात अकेला ग्रह जहाँ जीवन है'],
+  [12.6, 14.5, '<b>बृहस्पति</b> सबसे बड़ा — इसमें 1,300 से ज़्यादा पृथ्वियाँ समा जाएँ'],
+  [14.8, 16.7, '<b>शनि</b> के छल्ले बर्फ़ और पत्थर के टुकड़ों से बने हैं'],
+  [17.0, 19.8, 'सबसे दूर <b>अरुण</b> और <b>वरुण</b> — बर्फ़ीले दानव'],
+];
+const LABELS = { 1: ['mercury', 'venus', 'earth', 'mars'], 5: ['jupiter', 'saturn', 'uranus', 'neptune'] };
+const capEl = document.getElementById('cap'), titleEl = document.getElementById('title');
+
+window.renderFrame = (frame, fps = 30) => {
+  const t = Math.min(frame / fps, DURATION);
+  sunMat.uniforms.uTime.value = t;
+  sun.rotation.y = t * .05;
+  for (const p of P) {
+    const a = p.a0 + t * p.speed;
+    p.pivot.position.set(Math.cos(a) * p.d, 0, Math.sin(a) * p.d);
+    p.body.rotation.y = t * p.spin * .35;
+  }
+  clouds.rotation.y = t * .05;
+  moon.position.set(Math.cos(t * .9 + 1) * 1.45, .12, Math.sin(t * .9 + 1) * 1.45);
+  atmo.material.uniforms.uSun.value.set(0, 0, 0);
+  scene.updateMatrixWorld(true);
+
+  // camera: current shot, blended with the next one near the cut
+  let i = SHOTS.findIndex(([a, b]) => t >= a && t < b); if (i < 0) i = SHOTS.length - 1;
+  let [pos, tgt] = shotCam(i, t);
+  if (BLEND > 0 && i + 1 < SHOTS.length && t > SHOTS[i][1] - BLEND) {
+    const k = ss(SHOTS[i][1] - BLEND, SHOTS[i][1], t), [p2, t2] = shotCam(i + 1, SHOTS[i + 1][0]);
+    pos.lerp(p2, k); tgt.lerp(t2, k);
+  }
+  camera.position.copy(pos); camera.lookAt(tgt);
+  camera.updateMatrixWorld();
+
+  // title, captions, labels (DOM, so Hindi is shaped by the browser)
+  titleEl.style.opacity = (ss(.3, 1.1, t) * (1 - ss(3.6, 4.4, t))).toFixed(3);
+  const c = CAPS.find(([a, b]) => t >= a - .3 && t <= b + .3);
+  if (c && c[2]) { if (capEl.innerHTML !== c[2]) capEl.innerHTML = c[2]; capEl.style.opacity = (ss(c[0] - .3, c[0] + .2, t) * (1 - ss(c[1] - .2, c[1] + .3, t))).toFixed(3); }
+  else capEl.style.opacity = 0;
+  for (const p of P) {
+    const show = Object.entries(LABELS).find(([s, ks]) => ks.includes(p.key) && t >= SHOTS[s][0] + .5 && t <= SHOTS[s][1] - .2);
+    if (!show) { p.label.style.opacity = 0; continue; }
+    const s = SHOTS[show[0]], o = ss(s[0] + .5, s[0] + 1.2, t) * (1 - ss(s[1] - .7, s[1] - .2, t));
+    const top = wp(p).add(V(0, p.r * 1.25, 0)).project(camera);
+    p.label.style.left = ((top.x + 1) / 2 * W).toFixed(1) + 'px';
+    p.label.style.top = ((1 - top.y) / 2 * H).toFixed(1) + 'px';
+    p.label.style.opacity = top.z < 1 ? o.toFixed(3) : 0;
+  }
+  composer.render();
+};
+
+const q = new URLSearchParams(location.search);
+window.renderFrame(q.has('t') ? +q.get('t') * 30 : 0);
+if (q.has('preview')) { const s0 = performance.now(); const loop = () => { window.renderFrame(((performance.now() - s0) / 1000 % DURATION) * 30); requestAnimationFrame(loop); }; loop(); }
+</script>
+</body>
+</html>

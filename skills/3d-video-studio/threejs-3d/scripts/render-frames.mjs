@@ -6,6 +6,8 @@
 // Usage: node render-frames.mjs <page.html|url> <outDir> <width> <height> <fps> <frames>
 // Then:  ffmpeg -framerate <fps> -i <outDir>/%05d.png -c:v libx264 -pix_fmt yuv420p -crf 16 out.mp4
 //
+// Captions/labels in HTML: set SHOT=page to capture the whole viewport (canvas + DOM overlays).
+// Stills only: set FRAMES=0,150,300 to render just those frame numbers (look checks).
 // Offline: set THREE_LOCAL=/path/to/node_modules/three to serve three.js from disk instead of the CDN.
 // Needs Playwright: `npm i -D playwright && npx playwright install chromium`.
 import { createRequire } from 'node:module';
@@ -42,8 +44,10 @@ if (!(await page.evaluate(() => typeof window.renderFrame === 'function'))) {
   console.error('page has no window.renderFrame(frame, fps)');
   process.exit(1);
 }
-const canvas = (await page.$('canvas')) ?? page;
-for (let i = 0; i < N; i++) {
+await page.evaluate(() => document.fonts && document.fonts.ready);
+const canvas = process.env.SHOT === 'page' ? page : ((await page.$('canvas')) ?? page);
+const list = process.env.FRAMES ? process.env.FRAMES.split(',').map(Number) : Array.from({ length: N }, (_, i) => i);
+for (const i of list) {
   await page.evaluate(([f, fps]) => window.renderFrame(f, fps), [i, FPS]);
   await canvas.screenshot({ path: `${outDir}/${String(i).padStart(5, '0')}.png` });
   if (i % FPS === 0) process.stdout.write(`\rframe ${i + 1}/${N}`);
