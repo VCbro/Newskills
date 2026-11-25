@@ -1,6 +1,6 @@
 # 🚀 Newskills — Claude Code ke liye best open-source video, 3D aur website skills
 
-Ek jagah **42 skills + 99 film styles + 32 drawing styles + 52 art styles + 456 video blocks + 703 prompts**.
+Ek jagah **52 skills + 99 film styles + 32 drawing styles + 52 art styles + 456 video blocks + 703 prompts**.
 Kaam: code se realistic 3D video, explainers, launch videos, art films, aur 3D websites, sab MP4 tak render.
 Har skill ke saath uske **original author ka credit** hai (neeche table aur [`CREDITS.md`](CREDITS.md)).
 
@@ -30,6 +30,8 @@ Phir Claude Code restart karo aur normal bhasha me likho, jaise *"3d-video-studi
 | 7 | [**vox-director**](skills/vox-director/README.md) | Topic → **Vox-style collage explainer** / ad | MP4 + captions | [alisa0808/vox-director](https://github.com/alisa0808/vox-director) | MIT (paid API needed) |
 | 8 | [**anything2explainer**](skills/anything2explainer/README.md) | Topic → **3–5 min science explainer** with voice-over | MP4 + subs | [Vincentwei1021/anything2explainer](https://github.com/Vincentwei1021/anything2explainer) | PolyForm Noncommercial |
 | 9 | [**onetake**](skills/onetake/README.md) | **Launch / product motion video** (10–60 s) | 4K MP4 | [feitangyuan/onetake](https://github.com/feitangyuan/onetake) | PolyForm Noncommercial |
+| 10 | [**documentary-studio**](skills/documentary-studio/README.md) | **Documentary**: evidence board, paper-cut, real-reference 3D, newsreel, maps — **sahi Hindi text + captions** | MP4 + `.srt` + credits | [Moh4696/cinematic-skill](https://github.com/Moh4696/cinematic-skill) + is repo | MIT |
+| 11 | [**open-3d-skills**](skills/open-3d-skills/README.md) (8 skills) | Code se real landmarks/machines 3D, exploded view, 60fps recording, scroll films, site check | HTML + MP4 | [Moh4696/open-3d-skills](https://github.com/Moh4696/open-3d-skills) | MIT |
 | — | [**prompt-library**](prompt-library/README.md) (alag folder) | 703 viral code-video prompts | ideas | [yihui-dev/awesome-opus5-5-videos](https://github.com/yihui-dev/awesome-opus5-5-videos) | MIT |
 
 Har ek skill ki ek line wali list (naam, kaam, path): [`SKILLS_INDEX.md`](SKILLS_INDEX.md).
@@ -41,6 +43,9 @@ Har ek skill ki ek line wali list (naam, kaam, path): [`SKILLS_INDEX.md`](SKILLS
 | Realistic **3D** product / car / logo / space video | `3d-video-studio` → `ffmpeg-video` |
 | **Ghar / room / building** ka 3D model ya walkthrough | `3d-video-studio` (Pascal) |
 | Kisi **art style** me story film (watercolor, ukiyo-e, newsreel…) | `lemo-opuscar` ya `anidoodle` ya `huashu-art-motion` |
+| **Documentary** (history, true crime, biography) — Hindi bhi | `documentary-studio` |
+| Asli building / jagah / machine ka **3D reconstruction** | `documentary-studio` route C + `open-3d-skills` |
+| Kisi bhi video par **Hindi captions** | `documentary-studio/scripts/hindi_captions.py` |
 | **Science / tech explainer** (lamba, voice-over) | `anything2explainer` (free TTS) · `vox-director` (collage look, paid API) |
 | **App / product launch** clip | `onetake` · `anidoodle` launch · `hyperframes` |
 | Koi video **dekh kar same banana** | `hyperframes/reverse-any-video` · `huashu-art-motion` |

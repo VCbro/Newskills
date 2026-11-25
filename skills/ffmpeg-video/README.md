@@ -26,6 +26,7 @@ trim, join, crossfade, speed, GIF, WebM, poster, WhatsApp size, exact MB target,
 | "Isko 8 MB ke andar compress karo" | `out/8mb.mp4` |
 | "Iska accha GIF preview aur poster image do" | `out/preview.gif`, `out/poster.jpg` |
 | "subs.srt ko video me burn karo" | `out/subbed.mp4` |
+| "Is video par **Hindi** captions" | `documentary-studio/scripts/hindi_captions.py` se (FFmpeg/libass Hindi matras tod deta hai) |
 
 Saari commands is repo me ek test video par chala kar check ki gayi hain (music, voice ducking, 9:16, GIF).
 

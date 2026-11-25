@@ -57,6 +57,10 @@ ffmpeg -i in.mp4 -vf "subtitles=subs.srt:force_style='FontName=Inter,FontSize=22
 ffmpeg -i in.mp4 -i subs.srt -c copy -c:s mov_text out/soft-subs.mp4                                                              # soft subs
 ```
 
+**Hindi / Indic captions:** many FFmpeg builds shape Devanagari wrongly in `subtitles=` (libass) — the ि matra
+and conjuncts break. Burn them with `../documentary-studio/scripts/hindi_captions.py in.mp4 subs.srt out.mp4`
+(Pillow + raqm shaping, then FFmpeg overlay). Soft subs (`mov_text`) are fine: the player shapes them.
+
 ## Previews & sharing
 
 ```bash

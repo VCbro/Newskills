@@ -6,8 +6,18 @@
       "repo": "remotion-dev/skills",
       "author": "Remotion (Jonny Burger & contributors)",
       "license": "Remotion License (free for individuals & companies up to 3 people)",
-      "license_files": [["@remotion-dev/remotion:LICENSE.md", "LICENSE.md"]],
-      "copy": [["skills", "skills/3d-video-studio/remotion"]]
+      "license_files": [
+        [
+          "@remotion-dev/remotion:LICENSE.md",
+          "LICENSE.md"
+        ]
+      ],
+      "copy": [
+        [
+          "skills",
+          "skills/3d-video-studio/remotion"
+        ]
+      ]
     },
     {
       "id": "remotion",
@@ -22,10 +32,21 @@
       "repo": "heygen-com/hyperframes",
       "author": "HeyGen",
       "license": "Apache-2.0",
-      "license_files": [["LICENSE", "LICENSE"]],
+      "license_files": [
+        [
+          "LICENSE",
+          "LICENSE"
+        ]
+      ],
       "copy": [
-        ["skills", "skills/3d-video-studio/hyperframes"],
-        [".claude/skills", "skills/3d-video-studio/hyperframes-craft"]
+        [
+          "skills",
+          "skills/3d-video-studio/hyperframes"
+        ],
+        [
+          ".claude/skills",
+          "skills/3d-video-studio/hyperframes-craft"
+        ]
       ]
     },
     {
@@ -33,16 +54,36 @@
       "repo": "pascalorg/editor",
       "author": "Pascal (pascalorg)",
       "license": "MIT",
-      "license_files": [["LICENSE", "LICENSE"]],
-      "copy": [["skills", "skills/3d-video-studio/pascal-3d"]]
+      "license_files": [
+        [
+          "LICENSE",
+          "LICENSE"
+        ]
+      ],
+      "copy": [
+        [
+          "skills",
+          "skills/3d-video-studio/pascal-3d"
+        ]
+      ]
     },
     {
       "id": "threejs",
       "repo": "mrdoob/three.js",
       "author": "mrdoob (Ricardo Cabello) & three.js authors",
       "license": "MIT",
-      "license_files": [["LICENSE", "LICENSE"]],
-      "copy": [["llms.txt", "skills/3d-video-studio/threejs-3d/references/llms.txt"]]
+      "license_files": [
+        [
+          "LICENSE",
+          "LICENSE"
+        ]
+      ],
+      "copy": [
+        [
+          "llms.txt",
+          "skills/3d-video-studio/threejs-3d/references/llms.txt"
+        ]
+      ]
     },
     {
       "id": "ffmpeg",
@@ -57,48 +98,116 @@
       "repo": "alexgreensh/anidoodle",
       "author": "Alex Greenshpun",
       "license": "Apache-2.0",
-      "license_files": [["LICENSE", "LICENSE"], ["NOTICE", "NOTICE"]],
-      "copy": [["skills/anidoodle", "skills/anidoodle/anidoodle"]]
+      "license_files": [
+        [
+          "LICENSE",
+          "LICENSE"
+        ],
+        [
+          "NOTICE",
+          "NOTICE"
+        ]
+      ],
+      "copy": [
+        [
+          "skills/anidoodle",
+          "skills/anidoodle/anidoodle"
+        ]
+      ]
     },
     {
       "id": "huashu-art-motion",
       "repo": "alchaincyf/huashu-art-motion",
       "author": "alchaincyf (Huashu / 花叔)",
       "license": "MIT",
-      "license_files": [["LICENSE", "LICENSE"]],
-      "copy": [["", "skills/huashu-art-motion/huashu-art-motion"]]
+      "license_files": [
+        [
+          "LICENSE",
+          "LICENSE"
+        ]
+      ],
+      "copy": [
+        [
+          "",
+          "skills/huashu-art-motion/huashu-art-motion"
+        ]
+      ]
     },
     {
       "id": "lemo-opuscar",
       "repo": "lemomo-ai/lemo-opuscar",
       "author": "Lemomo (LemoLab / SecondFirst Pty Ltd)",
       "license": "MIT (code) + CC BY-NC 4.0 (docs/markdown) + CC BY 4.0 (films)",
-      "license_files": [["LICENSE", "LICENSE"], ["LICENSES", "LICENSES"]],
-      "copy": [["plugin/skills/lemo-opuscar", "skills/lemo-opuscar/lemo-opuscar"]]
+      "license_files": [
+        [
+          "LICENSE",
+          "LICENSE"
+        ],
+        [
+          "LICENSES",
+          "LICENSES"
+        ]
+      ],
+      "copy": [
+        [
+          "plugin/skills/lemo-opuscar",
+          "skills/lemo-opuscar/lemo-opuscar"
+        ]
+      ]
     },
     {
       "id": "vox-director",
       "repo": "alisa0808/vox-director",
       "author": "alisa0808",
       "license": "MIT",
-      "license_files": [["LICENSE", "LICENSE"]],
-      "copy": [["", "skills/vox-director/vox-director"]]
+      "license_files": [
+        [
+          "LICENSE",
+          "LICENSE"
+        ]
+      ],
+      "copy": [
+        [
+          "",
+          "skills/vox-director/vox-director"
+        ]
+      ]
     },
     {
       "id": "anything2explainer",
       "repo": "Vincentwei1021/anything2explainer",
       "author": "Vincent Wei",
       "license": "PolyForm Noncommercial 1.0.0 (commercial use needs author permission)",
-      "license_files": [["LICENSE", "LICENSE"]],
-      "copy": [["", "skills/anything2explainer/anything2explainer"]]
+      "license_files": [
+        [
+          "LICENSE",
+          "LICENSE"
+        ]
+      ],
+      "copy": [
+        [
+          "",
+          "skills/anything2explainer/anything2explainer"
+        ]
+      ]
     },
     {
       "id": "onetake",
       "repo": "feitangyuan/onetake",
       "author": "Patrick (feitangyuan)",
       "license": "PolyForm Noncommercial 1.0.0 (noncommercial only)",
-      "license_files": [["LICENSE", "LICENSE"]],
-      "copy": [["", "skills/onetake/onetake"]]
+      "license_files": [
+        [
+          "LICENSE",
+          "LICENSE"
+        ]
+      ],
+      "copy": [
+        [
+          "",
+          "skills/onetake/onetake"
+        ]
+      ]
     },
     {
       "id": "3d-portfolio",
@@ -113,8 +222,54 @@
       "repo": "yihui-dev/awesome-opus5-5-videos",
       "author": "yihui-dev (prompts by their original creators)",
       "license": "MIT",
-      "license_files": [["LICENSE", "LICENSE"]],
-      "copy": [["", "prompt-library/awesome-opus5-5-videos"]]
+      "license_files": [
+        [
+          "LICENSE",
+          "LICENSE"
+        ]
+      ],
+      "copy": [
+        [
+          "",
+          "prompt-library/awesome-opus5-5-videos"
+        ]
+      ]
+    },
+    {
+      "id": "cinematic-film",
+      "repo": "Moh4696/cinematic-skill",
+      "author": "exploraX (Moh4696)",
+      "license": "MIT",
+      "license_files": [
+        [
+          "LICENSE",
+          "LICENSE"
+        ]
+      ],
+      "copy": [
+        [
+          "skills/cinematic-film",
+          "skills/documentary-studio/cinematic-film"
+        ]
+      ]
+    },
+    {
+      "id": "open-3d-skills",
+      "repo": "Moh4696/open-3d-skills",
+      "author": "exploraX (Moh4696)",
+      "license": "MIT",
+      "license_files": [
+        [
+          "LICENSE",
+          "LICENSE"
+        ]
+      ],
+      "copy": [
+        [
+          "skills",
+          "skills/open-3d-skills/skills"
+        ]
+      ]
     }
   ]
 }

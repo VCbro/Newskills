@@ -20,6 +20,8 @@ project ka license zaroor padhein.
 | `skills/onetake/onetake` | [feitangyuan/onetake](https://github.com/feitangyuan/onetake) | Patrick (feitangyuan) | PolyForm Noncommercial 1.0.0 (noncommercial only) |
 | Skill: skills/3d-portfolio-website | [adrianhajdin/project_3D_developer_portfolio](https://github.com/adrianhajdin/project_3D_developer_portfolio) | Adrian Hajdin (JavaScript Mastery) | No license file upstream — code is NOT copied, the skill clones it on demand |
 | `prompt-library/awesome-opus5-5-videos` | [yihui-dev/awesome-opus5-5-videos](https://github.com/yihui-dev/awesome-opus5-5-videos) | yihui-dev (prompts by their original creators) | MIT |
+| `skills/documentary-studio/cinematic-film` | [Moh4696/cinematic-skill](https://github.com/Moh4696/cinematic-skill) | exploraX (Moh4696) | MIT |
+| `skills/open-3d-skills/skills` | [Moh4696/open-3d-skills](https://github.com/Moh4696/open-3d-skills) | exploraX (Moh4696) | MIT |
 
 Apni likhi skills (`skills/3d-video-studio/SKILL.md`, `threejs-3d`, `ffmpeg-video`,
 `3d-portfolio-website`) aur saare README/guide files: is repo ke maintainer (VCbro) ki, MIT license (`LICENSE`).

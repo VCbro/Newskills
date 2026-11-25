@@ -1,7 +1,7 @@
 # Skills index (auto-generated)
 
 `python3 scripts/build_catalogs.py` se bana hai — haath se edit mat karo.
-Kul **42 skills**. Group ka README padho kaise use karna hai.
+Kul **52 skills**. Group ka README padho kaise use karna hai.
 
 ## 3d-portfolio-website  ·  [README](skills/3d-portfolio-website/README.md)
 
@@ -60,6 +60,13 @@ Kul **42 skills**. Group ka README padho kaise use karna hai.
 |---|---|---|
 | `anything2explainer` | 给一个主题，产出一条黑底 MG 风格（幕底可选星点或点阵波）、有配音字幕章节进度条的科普讲解视频（中文或英文；Remotion 代码动画；时长由用户定，常用 3–5 分钟）。内含可编译模板、图元库、配音/分镜/渲染工具、风格与动效规范、多 agent 分工协议与 QC 判据，以及一条完整样片（《RAG 与知识库》）作为质量标尺。Turn any topic into a narrated motion-graphics explain… | [`skills/anything2explainer/anything2explainer`](skills/anything2explainer/anything2explainer) |
 
+## documentary-studio  ·  [README](skills/documentary-studio/README.md)
+
+| Skill | Kya karti hai | Path |
+|---|---|---|
+| `documentary-studio` | Make a narrated documentary or factual film from code, in Hindi, English or any language — history, biography, true crime, investigation, science, place or company stories — with real references (archive photos with lic… | [`skills/documentary-studio`](skills/documentary-studio) |
+| `cinematic-film` | Makes narrated cinematic films entirely from code, on any subject. One continuous camera glides over one designed world of photos, documents, cards, maps with routes and big numbers, with every stamp, highlight and numb… | [`skills/documentary-studio/cinematic-film`](skills/documentary-studio/cinematic-film) |
+
 ## ffmpeg-video  ·  [README](skills/ffmpeg-video/README.md)
 
 | Skill | Kya karti hai | Path |
@@ -83,6 +90,19 @@ Kul **42 skills**. Group ka README padho kaise use karna hai.
 | Skill | Kya karti hai | Path |
 |---|---|---|
 | `onetake` | Make short product / skill motion videos (10–30 s, narrated feature demos up to ~60 s) the way high-end launch clips are made — kinetic type, real UI as the material, a hand that causes every reaction, beats that carry… | [`skills/onetake/onetake`](skills/onetake/onetake) |
+
+## open-3d-skills  ·  [README](skills/open-3d-skills/README.md)
+
+| Skill | Kya karti hai | Path |
+|---|---|---|
+| `alpha-cutout` | Turns an AI-generated (or filmed) clip of a character or product into a transparent, web-ready animation by shooting it on a flat chroma plate and keying it with per-frame plate measurement and edge unmixing. Delivers s… | [`skills/open-3d-skills/skills/alpha-cutout`](skills/open-3d-skills/skills/alpha-cutout) |
+| `cursor-rig` | Makes a painted or illustrated character turn its head to follow the visitor's cursor, looking like one continuous painting that moves, without a 3D model or face tracking. Generates head-pose keyframes with an image-ed… | [`skills/open-3d-skills/skills/cursor-rig`](skills/open-3d-skills/skills/cursor-rig) |
+| `exploded-view` | Builds interactive 3D explainers of how a machine or product works, in three.js, with a staged exploded view driven by a slider or scroll, x-ray shells, a section cut through the casing, labels pinned to parts with lead… | [`skills/open-3d-skills/skills/exploded-view`](skills/open-3d-skills/skills/exploded-view) |
+| `frame-capture` | Records any web page (three.js, WebGL, canvas, GSAP, CSS animation, scroll-driven video) to a perfectly smooth 60 fps MP4 by running the page on a virtual clock, one exact frame at a time, and puts two recordings agains… | [`skills/open-3d-skills/skills/frame-capture`](skills/open-3d-skills/skills/frame-capture) |
+| `motion-assets` | Plans and generates the images and video clips an animated website needs with AI image and video models, without wasting money. Covers proposing the concept and asset list with exact prompts and costs before spending, k… | [`skills/open-3d-skills/skills/motion-assets`](skills/open-3d-skills/skills/motion-assets) |
+| `scroll-film` | Builds scroll-scrubbed film sections, where scrolling plays a pre-rendered camera move, a product turning, a liquid pour or a fly-through one exact frame at a time, from AI-generated or rendered clips. Covers chaining c… | [`skills/open-3d-skills/skills/scroll-film`](skills/open-3d-skills/skills/scroll-film) |
+| `site-check` | Verifies a 3D or animated web page in real headless browsers before anyone else sees it. Shoots every view, light state and scroll position at desktop, tablet and phone widths in Chromium and WebKit (Safari), measures f… | [`skills/open-3d-skills/skills/site-check`](skills/open-3d-skills/skills/site-check) |
+| `threejs-scene` | Builds real-time 3D websites in three.js from code alone, with no model files. Covers buildings and landmarks, vehicles, machines, landscapes and product studies made of procedural geometry (profile sweeps, lathes, inst… | [`skills/open-3d-skills/skills/threejs-scene`](skills/open-3d-skills/skills/threejs-scene) |
 
 ## vox-director  ·  [README](skills/vox-director/README.md)
 

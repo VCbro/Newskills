@@ -106,6 +106,12 @@ def main():
                 f"- **Synced commit:** `{sha}` on {today}\n\n"
                 f"Yeh files original author ki hain; sirf demo videos/GIFs aur 20 MB se badi files hata di gayi hain.\n"
                 f"Update karne ke liye: `python3 scripts/sync.py {s['id']}`\n")
+        patch = ROOT / "scripts" / "patches" / f"{s['id']}.py"
+        if patch.exists():  # local fixes on top of upstream (e.g. Hindi support), re-applied every sync
+            ns = {}
+            exec(compile(patch.read_text(), str(patch), "exec"), ns)
+            ns["apply"](ROOT / s["copy"][0][1])
+            print(f"   applied {patch.relative_to(ROOT)}")
         for lf_src, lf_dst in s.get("license_files", []):
             if lf_src.startswith("@"):
                 other, path = lf_src[1:].split(":", 1)
